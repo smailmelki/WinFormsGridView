@@ -14,48 +14,28 @@ namespace WinFormsGridView
 
         private void InitializeDataGridView()
         {
-            // ≈‰‘«¡ «·√⁄„œ…
-            dataGridView1.Columns.Add("ScreenName", "Screen Caption");
-            dataGridView1.Columns.Add(CreateCheckBoxColumn("View", "⁄—÷"));
-            dataGridView1.Columns.Add(CreateCheckBoxColumn("Add", "≈÷«›…"));
-            dataGridView1.Columns.Add(CreateCheckBoxColumn("Edit", " ⁄œÌ·"));
-            dataGridView1.Columns.Add(CreateCheckBoxColumn("Delete", "Õ–›"));
-            dataGridView1.Columns.Add(CreateCheckBoxColumn("Print", "ÿ»«⁄…"));
-
-            //dataGridView1.Columns[0].DefaultCellStyle.BackColor = SystemColors.HotTrack;
-            dataGridView1.Columns[0].DefaultCellStyle.BackColor = Color.LightGray;
-            dataGridView1.Rows[0].DefaultCellStyle.BackColor = Color.LightGray;
-
             // ÷»ÿ «· ‰”Ìﬁ« 
             dataGridView1.AllowUserToAddRows = false;
             dataGridView1.RowHeadersVisible = false;
+            dataGridView1.AllowUserToResizeRows = false;
             dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
 
             // ≈÷«›… »Ì«‰« 
-            AddRow("«·⁄„·«¡", true, true, true, true, false/*, Color.Gray*/);
-            AddRow("«·„Ê—œÌ‰", true, false, false, false, false/*, Color.Azure*/);
-            AddRow("«·„Œ“Ê‰", false, false, false, false, false/*, Color.Red*/);
-        }
-
-        private DataGridViewCheckBoxColumn CreateCheckBoxColumn(string name, string headerText)
-        {
-            return new DataGridViewCheckBoxColumn
-            {
-                Name = name,
-                HeaderText = headerText,
-                TrueValue = true,
-                FalseValue = false,
-                Width = 50
-            };
-        }
-
-        private void AddRow(string screenName, bool view, bool add, bool edit, bool delete, bool print, Color? rowColor = null)
-        {
-            int rowIndex = dataGridView1.Rows.Add(screenName, view, add, edit, delete, print);
-
-            //  €ÌÌ— ·Ê‰ «·’› ≈–« ·“„ «·√„—
-            if (rowColor.HasValue)
-                dataGridView1.Rows[rowIndex].DefaultCellStyle.BackColor = rowColor.Value;
+            List<Rowtype> data = new List<Rowtype>
+                {
+                    new Rowtype() { screenName= "«·⁄„·«¡",canView = true,canAdd = false,canEdit= true,canDelete = false,canPrint = false },
+                    new Rowtype() { screenName= "«·„Ê—œÌ‰",canView = false,canAdd = true,canEdit= false,canDelete = true,canPrint = false },
+                    new Rowtype() { screenName= "«·„Œ“Ê‰",canView = false,canAdd = false,canEdit= true,canDelete = false,canPrint = false },
+                };
+            dataGridView1.DataSource = data;
+            dataGridView1.Columns[0].DefaultCellStyle.BackColor = Color.LightGray;
+            //dataGridView1.Columns[0].DefaultCellStyle.BackColor = SystemColors.HotTrack;
+            dataGridView1.Columns[0].HeaderText = "«·‘«‘« ";
+            dataGridView1.Columns[1].HeaderText = "⁄—÷";
+            dataGridView1.Columns[2].HeaderText = "«÷«›…";
+            dataGridView1.Columns[3].HeaderText = " ⁄œÌ·";
+            dataGridView1.Columns[4].HeaderText = "Õ–›";
+            dataGridView1.Columns[5].HeaderText = "ÿ»«⁄…";
         }
 
         private void dataGridView1_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
@@ -71,7 +51,7 @@ namespace WinFormsGridView
                 int x = e.CellBounds.X + (e.CellBounds.Width - size) / 2;
                 int y = e.CellBounds.Y + (e.CellBounds.Height - size) / 2;
 
-                using (Brush backgroundBrush = new SolidBrush(e.Value != null && (bool)e.Value ? Color.LightGreen : e.CellStyle.BackColor))
+                using (Brush backgroundBrush = new SolidBrush(e.Value != null && (bool)e.Value ? Color.Green : e.CellStyle.BackColor))
                 using (Pen borderPen = new Pen(Color.Black, 1))
                 {
                     // —”„ «·Œ·›Ì… «·œ«∆—Ì…
@@ -83,7 +63,7 @@ namespace WinFormsGridView
                     // —”„ ⁄·«„… "’Õ" ≈–« ﬂ«‰  «·ﬁÌ„… True
                     if (e.Value != null && (bool)e.Value)
                     {
-                        using (Pen checkPen = new Pen(Color.Green, 2))
+                        using (Pen checkPen = new Pen(Color.White, 2))
                         {
                             e.Graphics.DrawLine(checkPen, x + size / 4, y + size / 2, x + size / 2, y + size * 3 / 4);
                             e.Graphics.DrawLine(checkPen, x + size / 2, y + size * 3 / 4, x + size * 3 / 4, y + size / 4);
@@ -102,23 +82,29 @@ namespace WinFormsGridView
                 dataGridView1.Rows[e.RowIndex].Selected = true;
             }
             //  Õﬁﬁ √‰ «·Œ·Ì… «· Ì  „ «·‰ﬁ— ⁄·ÌÂ« ·Ì”  „‰ «·⁄‰«ÊÌ‰
-            else if (e.RowIndex >= 0 && e.ColumnIndex > 0) //  ›«œÌ «·⁄„Êœ «·√Ê·
+            else if (e.RowIndex >= 0 && e.ColumnIndex > 0) // «·‰ﬁ— ⁄·Ï «·√⁄„œ… «·√Œ—Ï
             {
                 var cell = dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex];
 
-                // ⁄ﬂ” «·ﬁÌ„… «·Õ«·Ì… ··Œ·Ì…
-                if (cell.Value == null || !(bool)cell.Value)
+                //  Õﬁﬁ √‰ «·Œ·Ì…  Õ ÊÌ ⁄·Ï ﬁÌ„… „‰ÿﬁÌ…
+                if (cell.Value is bool currentValue)
                 {
-                    cell.Value = true; // ≈–« ·„  ﬂ‰ „Õœœ…° ÕœœÂ«
-                }
-                else
-                {
-                    cell.Value = false; // ≈–« ﬂ«‰  „Õœœ…° ﬁ„ »≈·€«¡ «· ÕœÌœ
-                }
+                    // ⁄ﬂ” «·ﬁÌ„…
+                    cell.Value = !currentValue;
 
-                //  ÕœÌÀ DataGridView
-                dataGridView1.InvalidateCell(cell);
+                    //  ÕœÌÀ ⁄—÷ «·Œ·Ì…
+                    dataGridView1.InvalidateCell(cell);
+                }
             }
         }
+    }
+    class Rowtype
+    {
+        public string screenName { get; set; } = "";
+        public bool canView { get; set; }
+        public bool canAdd { get; set; }
+        public bool canEdit { get; set; }
+        public bool canDelete { get; set; }
+        public bool canPrint { get; set; }
     }
 }
